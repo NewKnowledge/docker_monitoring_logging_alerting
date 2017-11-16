@@ -77,12 +77,16 @@ services:
 
   # Pretty frontend to explore and check out all your metrics.
   grafana:
-    image: grafana/grafana:4.4.1
+    image: grafana/grafana:4.5.2
     expose:
       - 3000
     volumes:
       - ../storage/grafana:/var/lib/grafana
-    restart: always
+      - ./grafana/datasources:/etc/grafana/datasources
+      - ./grafana/dashboards:/etc/grafana/dashboards
+      - ./grafana/setup.sh:/setup.sh
+    entrypoint: /setup.sh
+    restart: unless-stopped
     labels:
       container_group: monitoring
     logging:
