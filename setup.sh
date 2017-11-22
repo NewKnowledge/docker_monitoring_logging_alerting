@@ -2,18 +2,24 @@
 
 ERROR_MSG="Please chose one of the two modes: \\n a) Unsecure: sh setup.sh unsecure \\n b) Secure: sh setup.sh secure \$DOMAIN \$VERY_STRONG_PASSWORD"
 
-if [ $# -eq 0 ]; then
+source `dirname $0`/.env
+FLAVOR=${FLAVOR:-$1}
+DOMAIN=${DOMAIN:-$2}
+PASSWORD=${PASSWORD:-$3}
+MONITORING_PORT_HTTP=${MONITORING_PORT_HTTP:-80}
+MONITORING_PORT_HTTPS=${MONITORING_PORT_HTTPS:-443}
+
+if [ -z "$FLAVOR" ]; then
   echo $ERROR_MSG
+  exit 1
+fi
 
-elif [ $# -eq 1 ]; then
-  if [ "$1" = "unsecure" ]; then
-
+case "$FLAVOR" in
+  unsecure)
     echo "------------------------------------------------------------"
     echo "############################### Installing suite in UNSECURE mode."
     echo "############################### This means |NO| SSL/HTTPS, |NO| (basic) authentication but |YES| port forwading from the containers to the host machine. Only use this, when you're running this locally, on a virtual machine or in similarly safe conditions."
     echo "############################### This excludes all machines that are directly accesible from the internet."
-    echo "############################### Hit enter to continue or Ctrl-C to abort..."
-    read _
     echo "############################### Commencing!"
     echo "------------------------------------------------------------"
 
@@ -51,34 +57,29 @@ elif [ $# -eq 1 ]; then
     echo "############################### Finished - you're all set up. Use cleanup.sh to uninstall the suite."
     echo "------------------------------------------------------------"
 
-   else
-    echo $ERROR_MSG
-  fi
+    ;;
 
-elif [ $# -eq 3 ]; then
-  if [ "$1" = "secure" ]; then
+  secure)
+    PASSWORD=$({ htpasswd -nb admin $PASSWORD | cut -f 2 -d : ; } || exit 1;)
 
-    export DOMAIN=$2
-    export PASSWORD=$3
+    export DOMAIN PASSWORD
 
     echo "------------------------------------------------------------"
     echo "############################### Installing suite in SECURE mode."
     echo "############################### This means |YES| SSL/HTTPS, |YES| (basic) authentication but |NO| port forwading from the containers to the host machine. This mode is for running the suite out in the open, but won't work on machines that are not reachable directly via the internet."
     echo "############################### Also make sure you already set up DNS entries for grafana.${DOMAIN}, kibana.${DOMAIN}, prometheus.${DOMAIN} and alertmanager.${DOMAIN}."
-    echo  "############################### If you haven't done that, do it first. Hit enter to continue or Ctrl-C to abort..."
-    read _
     echo "############################### Commencing!"
     echo "------------------------------------------------------------"
 
     echo "......"
 
-    echo "------------------------------------------------------------"
-    echo "############################### Setting passwords for basic auth..."
-    echo "------------------------------------------------------------"
-    mkdir -p storage/nginx-proxy/htpasswd
-    htpasswd -bc storage/nginx-proxy/htpasswd/kibana.$DOMAIN admin $PASSWORD
-    htpasswd -bc storage/nginx-proxy/htpasswd/prometheus.$DOMAIN admin $PASSWORD
-    htpasswd -bc storage/nginx-proxy/htpasswd/alertmanager.$DOMAIN admin $PASSWORD
+    # echo "------------------------------------------------------------"
+    # echo "############################### Setting passwords for basic auth..."
+    # echo "------------------------------------------------------------"
+    # mkdir -p storage/nginx-proxy/htpasswd
+    # htpasswd -bc storage/nginx-proxy/htpasswd/kibana.$DOMAIN admin $PASSWORD
+    # htpasswd -bc storage/nginx-proxy/htpasswd/prometheus.$DOMAIN admin $PASSWORD
+    # htpasswd -bc storage/nginx-proxy/htpasswd/alertmanager.$DOMAIN admin $PASSWORD
 
     echo "------------------------------------------------------------"
     echo "############################### Creating separate docker network..."
@@ -90,14 +91,14 @@ elif [ $# -eq 3 ]; then
     echo "------------------------------------------------------------"
     docker-compose -f monitoring/docker-compose.secure.yml pull
     docker-compose -f logging/docker-compose.secure.yml pull
-    docker-compose -f proxy/docker-compose.yml pull
+    docker-compose -f proxy.traefik/docker-compose.yml pull
 
     echo "------------------------------------------------------------"
     echo "############################### Building images..."
     echo "------------------------------------------------------------"
     docker-compose -f monitoring/docker-compose.secure.yml build
     docker-compose -f logging/docker-compose.secure.yml build
-    docker-compose -f proxy/docker-compose.yml build
+    docker-compose -f proxy.traefik/docker-compose.yml build
 
     echo "------------------------------------------------------------"
     echo "############################### Starting monitoring and logging container groups..."
@@ -114,7 +115,7 @@ elif [ $# -eq 3 ]; then
     echo "------------------------------------------------------------"
     echo "############################### Starting proxy container group..."
     echo "------------------------------------------------------------"
-    docker-compose -f proxy/docker-compose.yml up --force-recreate -d
+    docker-compose -f proxy.traefik/docker-compose.yml up --force-recreate -d
 
     echo "------------------------------------------------------------"
     echo "############################### Tailing the logs of the nginx-letsencrypt container through the creation of the Diffie-Hellman group and the initial setup of your SSL certificates..."
@@ -126,7 +127,7 @@ elif [ $# -eq 3 ]; then
     echo "------------------------------------------------------------"
     echo "############################### Restarting proxy container group..."
     echo "------------------------------------------------------------"
-    docker-compose -f proxy/docker-compose.yml up --force-recreate -d
+    docker-compose -f proxy.traefik/docker-compose.yml up --force-recreate -d
 
     echo "------------------------------------------------------------"
     echo "############################### Output from 'docker ps'..."
@@ -137,10 +138,9 @@ elif [ $# -eq 3 ]; then
     echo "############################### Finished - you're all set up. You can now go to grafana.${DOMAIN}, kibana.${DOMAIN}, prometheus.${DOMAIN} and alertmanager.${DOMAIN} to check out your metrics, logs and alerts. Use cleanup.sh to uninstall the suite."
     echo "------------------------------------------------------------"
 
-  else
+    ;;
+  *)
     echo $ERROR_MSG
-  fi
-
-else
-  echo $ERROR_MSG
-fi
+    exit 1
+    ;;
+esac

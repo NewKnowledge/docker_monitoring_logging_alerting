@@ -37,6 +37,11 @@ This repository comes with storage directories for Kibana and Grafana that conta
 3. Check out the prerequisites in [`install-prerequisites.sh`](https://github.com/uschtwill/docker_monitoring_logging_alerting/blob/master/install-prerequisites.sh) and make sure they're fulfilled (or just run the script if the host is a fresh machine).
 4. Run the setup script `setup.sh`.
 
+#### NewKnowledge version
+
+* Copy the `.env.sample` file to `.env` and provide values for the variables
+* Run `sh setup.sh` with no parameters
+
 #### For `secure` mode run `sh setup.sh secure YOUR_DOMAIN VERY_STRONG_PASSWORD`
 
 5. Actually, before running the script, quickly create subdomain A-record DNS entries for grafana.DOMAIN, kibana.DOMAIN, prometheus.DOMAIN and alertmanager.DOMAIN that point at the host that is going to run the suite (DOMAIN being your domain).

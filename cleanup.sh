@@ -2,44 +2,15 @@
 
 ERROR_MSG="Please choose the mode you ran the suite in: \\n a) Unsecure: sh cleanup.sh unsecure \\n b) Secure: sh cleanup.sh secure"
 
-if [ $# -eq 0 ]; then
+source `dirname $0`/.env
+FLAVOR=${FLAVOR:-$1}
+
+if [ -z "$FLAVOR" ]; then
   echo $ERROR_MSG
+  exit 1
+fi
 
-elif [ $# -eq 1 ]; then
-  if [ "$1" = "unsecure" ]; then
-
-    echo "------------------------------------------------------------"
-    echo "############################### Cleaning up suite that was run in UNSECURE mode..."
-    echo "------------------------------------------------------------"
-
-    echo "......"
-
-    echo "------------------------------------------------------------"
-    echo "############################### Stopping and removing containers..."
-    echo "------------------------------------------------------------"
-    docker-compose -f monitoring/docker-compose.unsecure.yml down -v
-    docker-compose -f logging/docker-compose.unsecure.yml down -v
-
-  elif [ "$1" = "secure" ]; then
-
-    echo "------------------------------------------------------------"
-    echo "############################### Cleaning up suite that was run in SECURE mode..."
-    echo "------------------------------------------------------------"
-
-    echo "......"
-
-    echo "------------------------------------------------------------"
-    echo "############################### Stopping and removing containers..."
-    echo "------------------------------------------------------------"
-    docker-compose -f monitoring/docker-compose.secure.yml down -v
-    docker-compose -f logging/docker-compose.secure.yml down -v
-    docker-compose -f proxy/docker-compose.yml down -v
-
-  else
-    echo $ERROR_MSG
-    exit
-  fi
-
+cleanup_common() {
   echo "------------------------------------------------------------"
   echo "############################### Removing network..."
   echo "------------------------------------------------------------"
@@ -63,7 +34,44 @@ elif [ $# -eq 1 ]; then
   echo "------------------------------------------------------------"
   echo "############################### Finished. Everything's cleaned up."
   echo "------------------------------------------------------------"
+}
 
-else
-  echo $ERROR_MSG
-fi
+case "$FLAVOR" in
+  unsecure)
+    echo "------------------------------------------------------------"
+    echo "############################### Cleaning up suite that was run in UNSECURE mode..."
+    echo "------------------------------------------------------------"
+
+    echo "......"
+
+    echo "------------------------------------------------------------"
+    echo "############################### Stopping and removing containers..."
+    echo "------------------------------------------------------------"
+    docker-compose -f monitoring/docker-compose.unsecure.yml down -v
+    docker-compose -f logging/docker-compose.unsecure.yml down -v
+
+    cleanup_common
+    ;;
+
+  secure)
+    echo "------------------------------------------------------------"
+    echo "############################### Cleaning up suite that was run in SECURE mode..."
+    echo "------------------------------------------------------------"
+
+    echo "......"
+
+    echo "------------------------------------------------------------"
+    echo "############################### Stopping and removing containers..."
+    echo "------------------------------------------------------------"
+    docker-compose -f monitoring/docker-compose.secure.yml down -v
+    docker-compose -f logging/docker-compose.secure.yml down -v
+    docker-compose -f proxy.traefik/docker-compose.yml down -v
+
+    cleanup_common
+    ;;
+
+  *)
+    echo $ERROR_MSG
+    exit 1
+    ;;
+esac

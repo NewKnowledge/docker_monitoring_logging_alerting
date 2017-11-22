@@ -38,6 +38,11 @@ services:
       - LETSENCRYPT_EMAIL=admin@${DOMAIN}
       - LETSENCRYPT_TEST=false
       - HTTPS_METHOD=nohttp
+    labels:
+      - "traefik.backend=kibana"
+      - "traefik.docker.network=monitoring_logging"
+      - "traefik.frontend.rule=Host:kibana.${DOMAIN}"
+      - "traefik.enable=true"
 
   elastalert:
     extends:
@@ -48,6 +53,3 @@ networks:
   default:
     external:
       name: monitoring_logging
-
-
-

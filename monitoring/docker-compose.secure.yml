@@ -23,6 +23,11 @@ services:
       - LETSENCRYPT_EMAIL=admin@${DOMAIN}
       - LETSENCRYPT_TEST=false
       - HTTPS_METHOD=nohttp
+    labels:
+      - "traefik.backend=prometheus"
+      - "traefik.docker.network=monitoring_logging"
+      - "traefik.frontend.rule=Host:prometheus.${DOMAIN}"
+      - "traefik.enable=true"
 
   blackboxprober:
     extends:
@@ -40,6 +45,11 @@ services:
       - LETSENCRYPT_EMAIL=admin@${DOMAIN}
       - LETSENCRYPT_TEST=false
       - HTTPS_METHOD=nohttp
+    labels:
+      - "traefik.backend=grafana"
+      - "traefik.docker.network=monitoring_logging"
+      - "traefik.frontend.rule=Host:grafana.${DOMAIN}"
+      - "traefik.enable=true"
 
   alertmanager:
     extends:
@@ -51,6 +61,11 @@ services:
       - LETSENCRYPT_EMAIL=admin@${DOMAIN}
       - LETSENCRYPT_TEST=false
       - HTTPS_METHOD=nohttp
+    labels:
+      - "traefik.backend=alertmanager"
+      - "traefik.docker.network=monitoring_logging"
+      - "traefik.frontend.rule=Host:alertmanager.${DOMAIN}"
+      - "traefik.enable=true"
 
 networks:
   default:
