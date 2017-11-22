@@ -1,0 +1,35 @@
+version: '2'
+
+
+services:
+
+########################################################
+###                      PROXY                      ####
+########################################################
+  traefik:
+    build: traefik.dockerize
+    restart: always
+    ports:
+      - ${MONITORING_PORT_HTTP}:${MONITORING_PORT_HTTP}
+      - ${MONITORING_PORT_HTTPS}:${MONITORING_PORT_HTTPS}
+    volumes:
+      - ./traefik.in.toml:/etc/traefik/traefik.in.toml
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./certs:/etc/traefik/certs:ro
+    labels:
+      container_group: proxy
+    environment:
+      PORT_HTTP: "${MONITORING_PORT_HTTP}"
+      PORT_HTTPS: "${MONITORING_PORT_HTTPS}"
+      HTTP_BASIC_USER: admin
+      HTTP_BASIC_PASSWORD: ${PASSWORD}
+
+#########################################################
+####                   Networking                    ####
+#########################################################
+
+# Extra-network is necessary to have a dedicated IP for Logstash to forwards log to.
+networks:
+  default:
+    external:
+      name: monitoring_logging
