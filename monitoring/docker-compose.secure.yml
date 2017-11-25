@@ -20,6 +20,7 @@ services:
     environment:
       - VIRTUAL_HOST=prometheus.${DOMAIN}
     networks:
+      - default
       - node_ingress
     labels:
       - "traefik.backend=prometheus"
@@ -41,6 +42,7 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=${PASSWORD}
       - VIRTUAL_HOST=grafana.${DOMAIN}
     networks:
+      - default
       - node_ingress
     labels:
       - "traefik.backend=grafana"
@@ -56,6 +58,7 @@ services:
     environment:
       - VIRTUAL_HOST=alertmanager.${DOMAIN}
     networks:
+      - default
       - node_ingress
     labels:
       - "traefik.backend=alertmanager"

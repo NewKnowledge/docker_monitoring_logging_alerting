@@ -35,6 +35,7 @@ services:
     environment:
       - VIRTUAL_HOST=kibana.${DOMAIN}
     networks:
+      - default
       - node_ingress
     labels:
       - "traefik.backend=kibana"
