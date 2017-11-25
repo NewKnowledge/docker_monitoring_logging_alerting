@@ -20,7 +20,7 @@ services:
     environment:
       - VIRTUAL_HOST=prometheus.${DOMAIN}
     networks:
-      - ${INGRESS_NETWORK}
+      - node_ingress
     labels:
       - "traefik.backend=prometheus"
       - "traefik.docker.network=${INGRESS_NETWORK}"
@@ -41,7 +41,7 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=${PASSWORD}
       - VIRTUAL_HOST=grafana.${DOMAIN}
     networks:
-      - ${INGRESS_NETWORK}
+      - node_ingress
     labels:
       - "traefik.backend=grafana"
       - "traefik.docker.network=${INGRESS_NETWORK}"
@@ -56,7 +56,7 @@ services:
     environment:
       - VIRTUAL_HOST=alertmanager.${DOMAIN}
     networks:
-      - ${INGRESS_NETWORK}
+      - node_ingress
     labels:
       - "traefik.backend=alertmanager"
       - "traefik.docker.network=${INGRESS_NETWORK}"
@@ -68,3 +68,6 @@ networks:
   default:
     external:
       name: monitoring_logging
+  node_ingress:
+    external:
+      name: ${INGRESS_NETWORK}

@@ -35,7 +35,7 @@ services:
     environment:
       - VIRTUAL_HOST=kibana.${DOMAIN}
     networks:
-      - ${INGRESS_NETWORK}
+      - node_ingress
     labels:
       - "traefik.backend=kibana"
       - "traefik.docker.network=${INGRESS_NETWORK}"
@@ -52,3 +52,6 @@ networks:
   default:
     external:
       name: monitoring_logging
+  node_ingress:
+    external:
+      name: ${INGRESS_NETWORK}
