@@ -92,7 +92,9 @@ case "$FLAVOR" in
     echo "------------------------------------------------------------"
     echo "############################### Creating separate docker network..."
     echo "------------------------------------------------------------"
-    docker network create --subnet=172.16.0.0/24 monitoring_logging
+    if ! { docker network inspect monitoring_logging ; } then
+      docker network create --subnet=172.16.0.0/24 monitoring_logging
+    fi
 
     echo "------------------------------------------------------------"
     echo "############################### Pulling images..."
