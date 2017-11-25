@@ -65,7 +65,7 @@ case "$FLAVOR" in
     echo "------------------------------------------------------------"
     docker-compose -f monitoring/docker-compose.secure.yml down -v
     docker-compose -f logging/docker-compose.secure.yml down -v
-    docker-compose -f proxy.traefik/docker-compose.yml down -v
+    # docker-compose -f proxy.traefik/docker-compose.yml down -v
 
     cleanup_common
     ;;

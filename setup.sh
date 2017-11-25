@@ -6,13 +6,21 @@ source `dirname $0`/.env
 FLAVOR=${FLAVOR:-$1}
 DOMAIN=${DOMAIN:-$2}
 PASSWORD=${PASSWORD:-$3}
-MONITORING_PORT_HTTP=${MONITORING_PORT_HTTP:-80}
-MONITORING_PORT_HTTPS=${MONITORING_PORT_HTTPS:-443}
 
 if [ -z "$FLAVOR" ]; then
   echo $ERROR_MSG
   exit 1
 fi
+
+write_logging_conf() {
+  cat > `dirname $0`/logging.conf.sh <<EOF
+LOGGING_NETWORK=monitoring_logging
+LOGGING_DRIVER=gelf
+LOGGING_GELF_URL=udp://172.16.0.38:12201
+EOF
+}
+
+write_logging_conf
 
 case "$FLAVOR" in
   unsecure)
@@ -62,7 +70,7 @@ case "$FLAVOR" in
   secure)
     PASSWORD=$({ htpasswd -nb admin $PASSWORD | cut -f 2 -d : ; } || exit 1;)
 
-    export DOMAIN PASSWORD
+    export DOMAIN PASSWORD INGRESS_NETWORK
 
     echo "------------------------------------------------------------"
     echo "############################### Installing suite in SECURE mode."
@@ -91,14 +99,14 @@ case "$FLAVOR" in
     echo "------------------------------------------------------------"
     docker-compose -f monitoring/docker-compose.secure.yml pull
     docker-compose -f logging/docker-compose.secure.yml pull
-    docker-compose -f proxy.traefik/docker-compose.yml pull
+    # docker-compose -f proxy.traefik/docker-compose.yml pull
 
     echo "------------------------------------------------------------"
     echo "############################### Building images..."
     echo "------------------------------------------------------------"
     docker-compose -f monitoring/docker-compose.secure.yml build
     docker-compose -f logging/docker-compose.secure.yml build
-    docker-compose -f proxy.traefik/docker-compose.yml build
+    # docker-compose -f proxy.traefik/docker-compose.yml build
 
     echo "------------------------------------------------------------"
     echo "############################### Starting monitoring and logging container groups..."
@@ -115,7 +123,7 @@ case "$FLAVOR" in
     echo "------------------------------------------------------------"
     echo "############################### Starting proxy container group..."
     echo "------------------------------------------------------------"
-    docker-compose -f proxy.traefik/docker-compose.yml up --force-recreate -d
+    # docker-compose -f proxy.traefik/docker-compose.yml up --force-recreate -d
 
     echo "------------------------------------------------------------"
     echo "############################### Tailing the logs of the nginx-letsencrypt container through the creation of the Diffie-Hellman group and the initial setup of your SSL certificates..."
@@ -124,10 +132,10 @@ case "$FLAVOR" in
     sh -c 'docker logs -f proxy_nginx-letsencrypt_1 | { sed "/Reloading nginx proxy.../ q" && kill $$ ;}'
     echo "xxxxxxxxxxxx End of logs."
 
-    echo "------------------------------------------------------------"
-    echo "############################### Restarting proxy container group..."
-    echo "------------------------------------------------------------"
-    docker-compose -f proxy.traefik/docker-compose.yml up --force-recreate -d
+    # echo "------------------------------------------------------------"
+    # echo "############################### Restarting proxy container group..."
+    # echo "------------------------------------------------------------"
+    # docker-compose -f proxy.traefik/docker-compose.yml up --force-recreate -d
 
     echo "------------------------------------------------------------"
     echo "############################### Output from 'docker ps'..."
