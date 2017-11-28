@@ -19,14 +19,14 @@ services:
       service: prometheus
     environment:
       - VIRTUAL_HOST=prometheus.${DOMAIN}
-      - LETSENCRYPT_HOST=prometheus.${DOMAIN}
-      - LETSENCRYPT_EMAIL=admin@${DOMAIN}
-      - LETSENCRYPT_TEST=false
-      - HTTPS_METHOD=nohttp
+    networks:
+      - default
+      - node_ingress
     labels:
       - "traefik.backend=prometheus"
-      - "traefik.docker.network=monitoring_logging"
+      - "traefik.docker.network=${INGRESS_NETWORK}"
       - "traefik.frontend.rule=Host:prometheus.${DOMAIN}"
+      - "traefik.frontend.auth.basic=admin:${PASSWORD}"
       - "traefik.enable=true"
 
   blackboxprober:
@@ -41,14 +41,14 @@ services:
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=${PASSWORD}
       - VIRTUAL_HOST=grafana.${DOMAIN}
-      - LETSENCRYPT_HOST=grafana.${DOMAIN}
-      - LETSENCRYPT_EMAIL=admin@${DOMAIN}
-      - LETSENCRYPT_TEST=false
-      - HTTPS_METHOD=nohttp
+    networks:
+      - default
+      - node_ingress
     labels:
       - "traefik.backend=grafana"
-      - "traefik.docker.network=monitoring_logging"
+      - "traefik.docker.network=${INGRESS_NETWORK}"
       - "traefik.frontend.rule=Host:grafana.${DOMAIN}"
+      - "traefik.frontend.auth.basi c=admin:${PASSWORD}"
       - "traefik.enable=true"
 
   alertmanager:
@@ -57,17 +57,20 @@ services:
       service: alertmanager
     environment:
       - VIRTUAL_HOST=alertmanager.${DOMAIN}
-      - LETSENCRYPT_HOST=alertmanager.${DOMAIN}
-      - LETSENCRYPT_EMAIL=admin@${DOMAIN}
-      - LETSENCRYPT_TEST=false
-      - HTTPS_METHOD=nohttp
+    networks:
+      - default
+      - node_ingress
     labels:
       - "traefik.backend=alertmanager"
-      - "traefik.docker.network=monitoring_logging"
+      - "traefik.docker.network=${INGRESS_NETWORK}"
       - "traefik.frontend.rule=Host:alertmanager.${DOMAIN}"
+      - "traefik.frontend.auth.basic=admin:${PASSWORD}"
       - "traefik.enable=true"
 
 networks:
   default:
     external:
       name: monitoring_logging
+  node_ingress:
+    external:
+      name: ${INGRESS_NETWORK}

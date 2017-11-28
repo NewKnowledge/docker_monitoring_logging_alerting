@@ -34,14 +34,14 @@ services:
       service: kibana
     environment:
       - VIRTUAL_HOST=kibana.${DOMAIN}
-      - LETSENCRYPT_HOST=kibana.${DOMAIN}
-      - LETSENCRYPT_EMAIL=admin@${DOMAIN}
-      - LETSENCRYPT_TEST=false
-      - HTTPS_METHOD=nohttp
+    networks:
+      - default
+      - node_ingress
     labels:
       - "traefik.backend=kibana"
-      - "traefik.docker.network=monitoring_logging"
+      - "traefik.docker.network=${INGRESS_NETWORK}"
       - "traefik.frontend.rule=Host:kibana.${DOMAIN}"
+      - "traefik.frontend.auth.basic=admin:${PASSWORD}"
       - "traefik.enable=true"
 
   elastalert:
@@ -53,3 +53,6 @@ networks:
   default:
     external:
       name: monitoring_logging
+  node_ingress:
+    external:
+      name: ${INGRESS_NETWORK}
