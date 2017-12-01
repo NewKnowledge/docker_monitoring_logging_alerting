@@ -14,9 +14,9 @@ fi
 
 write_logging_conf() {
   cat > `dirname $0`/logging.conf.sh <<EOF
-LOGGING_NETWORK=monitoring_logging
-LOGGING_DRIVER=gelf
-LOGGING_GELF_URL=udp://172.16.0.38:12201
+export LOGGING_NETWORK=monitoring_logging
+export LOGGING_DRIVER=gelf
+export LOGGING_GELF_URL=udp://172.16.0.38:12201
 EOF
 }
 
