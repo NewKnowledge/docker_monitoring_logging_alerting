@@ -70,7 +70,7 @@ case "$FLAVOR" in
   secure)
     PASSWORD=$({ htpasswd -nb admin $PASSWORD | cut -f 2 -d : ; } || exit 1;)
 
-    export DOMAIN PASSWORD INGRESS_NETWORK
+    export DOMAIN PASSWORD INGRESS_NETWORK LOG_STORAGE_PATH
 
     echo "------------------------------------------------------------"
     echo "############################### Installing suite in SECURE mode."

@@ -63,7 +63,7 @@ services:
     expose:
       - 9200
     volumes:
-      - ../storage/elasticsearch:/usr/share/elasticsearch/data
+      - ${LOG_STORAGE_PATH}/elasticsearch:/usr/share/elasticsearch/data
     restart: always
     command: elasticsearch -Etransport.host=127.0.0.1
     labels:
