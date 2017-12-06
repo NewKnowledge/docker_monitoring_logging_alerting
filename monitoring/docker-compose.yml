@@ -50,10 +50,10 @@ services:
     expose:
       - 9090
     volumes:
-      - ../storage/prometheus:/prometheus
+      - ${LOG_STORAGE_PATH}/prometheus:/prometheus
       #Will/23.08.16: dcom restart prometheus suffices to load config/rule changes
       #Qyao/07.10.17: curl -X POST http://localhost:9090/-/reload to reload config
-      # it will be safe to mount ./prometheus folder in recent prometheus image  
+      # it will be safe to mount ./prometheus folder in recent prometheus image
       - ./prometheus:/etc/prometheus
     restart: always
     command:
@@ -81,7 +81,7 @@ services:
     expose:
       - 3000
     volumes:
-      - ../storage/grafana:/var/lib/grafana
+      - ${LOG_STORAGE_PATH}/grafana:/var/lib/grafana
       - ./grafana/datasources:/etc/grafana/datasources
       - ./grafana/dashboards:/etc/grafana/dashboards
       - ./grafana/setup.sh:/setup.sh
@@ -107,7 +107,7 @@ services:
     restart: always
     volumes:
       - ./alertmanager/:/etc/alertmanager/
-      - ../storage/alertmanager/:/alertmanager
+      - ${LOG_STORAGE_PATH}/alertmanager/:/alertmanager
     command:
       - '-config.file=/etc/alertmanager/config.yml'
       - '-storage.path=/alertmanager'
